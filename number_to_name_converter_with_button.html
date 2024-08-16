@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number to Name Converter</title>
+    <style>
+        /* Basic styling for input and output */
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        input, button {
+            padding: 10px;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Number to Name Converter</h1>
+    <input type="text" id="numberInput" placeholder="Enter an exponent like 6" onkeypress="if(event.key === 'Enter') handleInput();">
+    <button onclick="handleInput()">Convert</button>
+    <div id="result"></div>
+
+    <script>
+        // Function to get the name of the number based on the exponent
+        function numberName(exponent) {
+            const names = {
+                3: "thousand",
+                6: "million",
+                9: "billion",
+                12: "trillion",
+                15: "quadrillion",
+                18: "quintillion",
+                21: "sextillion",
+                24: "septillion",
+                27: "octillion",
+                30: "nonillion",
+                33: "decillion",
+                36: "undecillion",
+                39: "duodecillion",
+                42: "tredecillion",
+                45: "quattuordecillion",
+                48: "quindecillion",
+                51: "sexdecillion",
+                54: "septendecillion",
+                57: "octodecillion",
+                60: "novemdecillion",
+                63: "vigintillion"
+            };
+            
+            // Determine the base (e.g., 10) and the name based on exponent
+            let base = Math.pow(10, exponent % 3);
+            let name = names[exponent - (exponent % 3)];
+            
+            // If the exponent is less than 3, we handle the base as the full number
+            if (exponent < 3) {
+                base = Math.pow(10, exponent);
+                name = "";
+            }
+            
+            return `${base} ${name}`.trim();
+        }
+
+        // Function to handle user input and display the result
+        function handleInput() {
+            const input = document.getElementById('numberInput').value;
+            
+            // Parse the input directly as an exponent
+            const exponent = parseInt(input);
+            
+            // Check if the input is a valid number
+            if (isNaN(exponent) || exponent < 0) {
+                document.getElementById('result').innerText = "Please enter a valid positive number.";
+                return;
+            }
+
+            // Get the name of the number
+            const name = numberName(exponent);
+            
+            // Display the result
+            document.getElementById('result').innerText = name;
+        }
+    </script>
+
+</body>
+</html>
