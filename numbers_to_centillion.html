@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number to Name Converter</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: auto;
+            overflow-x: hidden;
+            background-color: #fff;
+            color: #000;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        body.dark-mode {
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+        input, button, select, #slider {
+            padding: 10px;
+            font-size: 16px;
+            margin: 10px 0;
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        body.dark-mode input, body.dark-mode button, body.dark-mode select, body.dark-mode #slider {
+            border-color: #555;
+            background-color: #333;
+            color: #e0e0e0;
+        }
+        .icon-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+            font-size: 24px;
+            color: #000;
+            transition: color 0.3s;
+        }
+        body.dark-mode .icon-container {
+            color: #e0e0e0;
+        }
+        #result, #visualRepresentation, #scientificNotation {
+            margin-top: 20px;
+            font-weight: bold;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        #scientificNotation {
+            font-style: italic;
+        }
+        #validationMessage {
+            color: red;
+            margin-top: 10px;
+        }
+        #instructions {
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #333;
+        }
+        .button-container, .radio-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin: 10px 0;
+        }
+        .button-container button, .radio-container label {
+            flex: 1;
+            margin: 0 2px;
+            text-align: center;
+        }
+        .radio-container label {
+            margin: 0;
+        }
+        #slider {
+            width: calc(100% - 20px);
+        }
+        .scientific-notation {
+            font-size: 16px;
+            color: #555;
+        }
+        .scientific-notation sup {
+            font-size: 0.8em;
+        }
+        input:focus {
+            outline: 2px solid #007BFF;
+        }
+    </style>
+</head>
+<body>
+    <div class="icon-container" id="darkModeToggle" aria-label="Toggle Dark Mode">
+        <i class="fas fa-moon"></i>
+    </div>
+    <h1>Number to Name Converter</h1>
+    <div id="instructions">Please enter an exponent from 0 to 305:</div>
+    
+    <input type="number" id="numberInput" min="0" max="305" placeholder="Enter an exponent from 0 to 305">
+    
+    <div class="button-container">
+        <button onclick="jumpTo('last')">LAST NUMBER</button>
+        <button onclick="adjustNumber(-1)">-1</button>
+        <button onclick="adjustNumber(1)">+1</button>
+        <button onclick="jumpTo('next')">NEXT NUMBER</button>
+    </div>
+    
+    <div class="button-container">
+        <button onclick="jumpToMilestone('last')">LAST MILESTONE</button>
+        <button onclick="jumpToMilestone('next')">NEXT MILESTONE</button>
+    </div>
+    
+    <input type="range" id="slider" min="0" max="305" value="0">
+    
+    <div class="radio-container">
+        <label><input type="radio" name="format" value="spaces" checked> With Spaces</label>
+        <label><input type="radio" name="format" value="none"> No Spaces</label>
+        <label><input type="radio" name="format" value="commas"> With Commas</label>
+    </div>
+    
+    <button onclick="handleInput()">Convert</button>
+    
+    <div id="result"></div>
+    <div id="visualRepresentation"></div>
+    <div id="scientificNotation" class="scientific-notation"></div>
+    <div id="validationMessage"></div>
+
+    <script>
+        const keyExponents = [0, 1, 2, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51, 54, 57, 60, 63, 66, 69, 72, 75, 78, 81, 84, 87, 90, 93, 96, 99, 102, 105, 108, 111, 114, 117, 120, 123, 126, 129, 132, 135, 138, 141, 144, 147, 150, 153, 156, 159, 162, 165, 168, 171, 174, 177, 180, 183, 186, 189, 192, 195, 198, 201, 204, 207, 210, 213, 216, 219, 222, 225, 228, 231, 234, 237, 240, 243, 246, 249, 252, 255, 258, 261, 264, 267, 270, 273, 276, 279, 282, 285, 288, 291, 294, 297, 300, 303, 306];
+        const milestones = [0, 1, 2, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 63, 93, 123, 153, 183, 213, 243, 273, 303];
+
+        const numberNames = {
+            0: "one",
+            1: "ten",
+            2: "hundred",
+            3: "thousand",
+            6: "million",
+            9: "billion",
+            12: "trillion",
+            15: "quadrillion",
+            18: "quintillion",
+            21: "sextillion",
+            24: "septillion",
+            27: "octillion",
+            30: "nonillion",
+            33: "decillion",
+            36: "undecillion",
+            39: "duodecillion",
+            42: "tredecillion",
+            45: "quattuordecillion",
+            48: "quindecillion",
+            51: "sexdecillion",
+            54: "septendecillion",
+            57: "octodecillion",
+            60: "novemdecillion",
+            63: "vigintillion",
+            66: "unvigintillion",
+            69: "duovigintillion",
+            72: "trevigintillion",
+            75: "quattuordecillion",
+            78: "quinvigintillion",
+            81: "sexvigintillion",
+            84: "septenvigintillion",
+            87: "octovigintillion",
+            90: "novemvigintillion",
+            93: "trigintillion",
+            96: "untrigintillion",
+            99: "duotrigintillion",
+            102: "tretrigintillion",
+            105: "quattuortrigintillion",
+            108: "quintrigintillion",
+            111: "sextrigintillion",
+            114: "septentrigintillion",
+            117: "octotrigintillion",
+            120: "novemtrigintillion",
+            123: "quadragintillion",
+            126: "unquadragintillion",
+            129: "duoquadragintillion",
+            132: "trequadragintillion",
+            135: "quattuorquadragintillion",
+            138: "quinquadragintillion",
+            141: "sexquadragintillion",
+            144: "septenquadragintillion",
+            147: "octoquadragintillion",
+             150: "novemquadragintillion",
+            153: "quinquagintillion",
+            156: "unquinquagintillion",
+            159: "duoquinquagintillion",
+            162: "trequinquagintillion",
+            165: "quattuorquinquagintillion",
+            168: "quinquinquagintillion",
+            171: "sexquinquagintillion",
+            174: "septenquinquagintillion",
+            177: "octoquinquagintillion",
+            180: "novemquinquagintillion",
+            183: "sexagintillion",
+            186: "unsexagintillion",
+            189: "duosexagintillion",
+            192: "tresexagintillion",
+            195: "quattuorsexagintillion",
+            198: "quinsexagintillion",
+            201: "sexsexagintillion",
+            204: "septensexagintillion",
+            207: "octosexagintillion",
+            210: "novemsexagintillion",
+            213: "septuagintillion",
+            216: "unseptuagintillion",
+            219: "duoseptuagintillion",
+            222: "treseptuagintillion",
+            225: "quattuorseptuagintillion",
+            228: "quinseptuagintillion",
+            231: "sexseptuagintillion",
+            234: "septenseptuagintillion",
+            237: "octoseptuagintillion",
+            240: "novemseptuagintillion",
+            243: "octogintillion",
+            246: "unoctogintillion",
+            249: "duooctogintillion",
+            252: "treoctogintillion",
+            255: "quattuoroctogintillion",
+            258: "quinoctogintillion",
+            261: "sexoctogintillion",
+            264: "septenoctogintillion",
+            267: "octooctogintillion",
+            270: "novemoctogintillion",
+            273: "nonagintillion",
+            276: "unnonagintillion",
+            279: "duononagintillion",
+            282: "trenonagintillion",
+            285: "quattuornonagintillion",
+            288: "quinnonagintillion",
+            291: "sexnonagintillion",
+            294: "septennonagintillion",
+            297: "octononagintillion",
+            300: "novemnonagintillion",
+            303: "centillion"
+        };
+
+        function numberName(exponent) {
+            if (exponent === 100) return "googol (10 duotrigintillion)";
+            if (numberNames[exponent]) {
+                return numberNames[exponent];
+            } else {
+                const lowerExponent = keyExponents.slice().reverse().find(exp => exp < exponent) || 0;
+                if (lowerExponent > 0 && numberNames[lowerExponent]) {
+                    return `${Math.pow(10, exponent - lowerExponent)} ${numberNames[lowerExponent]}`;
+                } else {
+                    return "Name not defined for this exponent";
+                }
+            }
+        }
+
+        function formatNumberWithSpaces(number) {
+            return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+        }
+
+        function formatNumberWithCommas(number) {
+            return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+
+        function formatNumber(number) {
+            const format = document.querySelector('input[name="format"]:checked').value;
+            if (format === 'commas') {
+                return formatNumberWithCommas(number);
+            } else if (format === 'none') {
+                return number.toString();
+            } else {
+                return formatNumberWithSpaces(number);
+            }
+        }
+
+        function handleInput() {
+            const inputElement = document.getElementById('numberInput');
+            const validationMessage = document.getElementById('validationMessage');
+            const exponent = parseInt(inputElement.value, 10);
+
+            if (isNaN(exponent) || exponent < 0 || exponent > 305) {
+                validationMessage.innerText = "Please enter a valid natural number between 0 and 305.";
+                document.getElementById('result').innerText = "";
+                document.getElementById('visualRepresentation').innerText = "";
+                document.getElementById('scientificNotation').innerText = "";
+                return;
+            }
+
+            validationMessage.innerText = "";
+
+            const name = numberName(exponent);
+            const numericRepresentation = `1${'0'.repeat(exponent)}`;
+            const formattedNumber = formatNumber(numericRepresentation);
+
+            document.getElementById('result').innerText = name;
+            document.getElementById('visualRepresentation').innerText = formattedNumber;
+            document.getElementById('scientificNotation').innerHTML = `10<sup>${exponent}</sup>`;
+            updateSlider();
+        }
+
+        function adjustNumber(delta) {
+            const inputElement = document.getElementById('numberInput');
+            let currentValue = parseInt(inputElement.value, 10) || 0;
+            let newValue = currentValue + delta;
+
+            newValue = Math.max(0, Math.min(newValue, 305));
+
+            inputElement.value = newValue;
+            handleInput();
+        }
+
+        function jumpTo(direction) {
+            const inputElement = document.getElementById('numberInput');
+            const currentValue = parseInt(inputElement.value, 10) || 0;
+            const newValue = direction === 'next'
+                ? keyExponents.find(exp => exp > currentValue) || keyExponents[keyExponents.length - 1]
+                : keyExponents.slice().reverse().find(exp => exp < currentValue) || keyExponents[0];
+
+            inputElement.value = newValue;
+            handleInput();
+        }
+
+        function jumpToMilestone(direction) {
+            const inputElement = document.getElementById('numberInput');
+            const currentValue = parseInt(inputElement.value, 10) || 0;
+            const newValue = direction === 'next'
+                ? milestones.find(exp => exp > currentValue) || milestones[milestones.length - 1]
+                : milestones.slice().reverse().find(exp => exp < currentValue) || milestones[0];
+
+            inputElement.value = newValue;
+            handleInput();
+        }
+
+        function updateSlider() {
+            const inputElement = document.getElementById('numberInput');
+            const slider = document.getElementById('slider');
+            slider.value = inputElement.value;
+        }
+
+        function handleSliderChange() {
+            const slider = document.getElementById('slider');
+            const inputElement = document.getElementById('numberInput');
+            inputElement.value = slider.value;
+            handleInput();
+        }
+
+        function handleEnterKey(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                handleInput();
+            }
+        }
+
+        document.querySelectorAll('input[name="format"]').forEach(radio => {
+            radio.addEventListener('change', handleInput);
+        });
+
+        document.getElementById('slider').addEventListener('input', handleSliderChange);
+
+        document.getElementById('numberInput').addEventListener('keydown', handleEnterKey);
+
+        document.getElementById('darkModeToggle').addEventListener('click', function() {
+            document.body.classList.toggle('dark-mode');
+            const icon = document.querySelector('#darkModeToggle i');
+            if (document.body.classList.contains('dark-mode')) {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            }
+        });
+
+        // Initialize slider with the default input value
+        updateSlider();
+    </script>
+</body>
+</html>
