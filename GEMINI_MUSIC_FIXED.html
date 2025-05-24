@@ -1,0 +1,1639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number to Name Converter</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* CSS Variables for easier theme management */
+        :root {
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+            --input-bg: #fff;
+            --input-border: #ccc;
+            --button-bg: #007bff;
+            --button-text: #fff;
+            --button-hover-bg: #0056b3;
+            --validation-color: #dc3545;
+            --scientific-color: #6c757d;
+            --icon-color: #333;
+            --focus-outline: #007bff;
+            --history-item-bg: #e9ecef;
+            --history-item-hover-bg: #dee2e6;
+            --modal-bg: rgba(0, 0, 0, 0.5);
+            --modal-content-bg: #fff;
+            --modal-content-border: #aaa;
+            --close-button-color: #555;
+            --close-button-hover-color: #000;
+
+            /* Audio player specific - Adjusted for integrated player look */
+            --player-container-bg: rgba(255, 255, 255, 0.95); /* Light, semi-transparent */
+            --player-container-border: rgba(200, 200, 200, 0.8);
+            --player-accent-color: #8c7ae6; /* Purple accent */
+            --player-text-color: #333;
+            --player-sub-text-color: #666;
+            --player-control-bg: #4a4a8f; /* Darker purple */
+            --player-control-hover-bg: #6a6ad0; /* Lighter purple on hover */
+            --player-main-control-bg: #8c7ae6; /* Main purple */
+            --player-main-control-hover-bg: #a08aff;
+            --player-slider-track: #ccc;
+            --player-slider-thumb: #8c7ae6;
+        }
+
+        body.dark-mode {
+            --bg-color: #212529; /* Darker charcoal */
+            --text-color: #e0e0e0;
+            --input-bg: #343a40; /* Slightly lighter charcoal */
+            --input-border: #495057; /* Even lighter gray */
+            --button-bg: #495057; /* Dark mode button background */
+            --button-text: #e0e0e0;
+            --button-hover-bg: #5a6268; /* Dark mode button hover */
+            --validation-color: #ff6b6b;
+            --scientific-color: #a0a0a0;
+            --icon-color: #e0e0e0;
+            --focus-outline: #66c2ff; /* Lighter blue for focus */
+            --history-item-bg: #343a40;
+            --history-item-hover-bg: #495057;
+            --modal-bg: rgba(0, 0, 0, 0.7);
+            --modal-content-bg: #343a40;
+            --modal-content-border: #495057;
+            --close-button-color: #e0e0e0;
+            --close-button-hover-color: #fff;
+
+            /* Audio player specific dark mode */
+            --player-container-bg: rgba(25, 30, 50, 0.9); /* Dark, semi-transparent */
+            --player-container-border: rgba(50, 60, 90, 0.8);
+            --player-accent-color: #8c7ae6;
+            --player-text-color: #e0e0e0;
+            --player-sub-text-color: #b0b0b0;
+            --player-control-bg: #4a4a8f;
+            --player-control-hover-bg: #6a6ad0;
+            --player-main-control-bg: #8c7ae6;
+            --player-main-control-hover-bg: #a08aff;
+            --player-slider-track: #3a3a7f;
+            --player-slider-thumb: #8c7ae6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: auto;
+            overflow-x: hidden;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            line-height: 1.6;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--text-color);
+            margin-bottom: 30px;
+        }
+
+        input, button, select {
+            padding: 12px;
+            font-size: 1em;
+            margin: 8px 0;
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            transition: border-color 0.2s, background-color 0.2s, color 0.2s;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            height: 8px;
+            background: var(--input-border); /* Default to general input border */
+            outline: none;
+            opacity: 0.8;
+            transition: opacity .2s;
+            margin-top: 15px;
+            margin-bottom: 25px;
+            border-radius: 5px;
+        }
+
+        input[type="range"]:hover {
+            opacity: 1;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--button-bg);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: var(--button-bg);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        input:focus, button:focus, .history-item:focus, .audio-control-button:focus, #playerToggleBtn:focus {
+            outline: 2px solid var(--focus-outline);
+            border-color: var(--focus-outline);
+        }
+
+        button {
+            cursor: pointer;
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            border: none;
+            font-weight: bold;
+            transition: background-color 0.2s ease;
+            margin-top: 0; /* Adjust for container */
+        }
+
+        button:hover {
+            background-color: var(--button-hover-bg);
+        }
+
+        .icon-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+            font-size: 28px;
+            color: var(--icon-color);
+            transition: color 0.3s;
+            z-index: 1000;
+        }
+        
+        #result, #visualRepresentation, #scientificNotation {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            color: var(--text-color);
+            transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+        }
+
+        #scientificNotation {
+            font-style: italic;
+            font-weight: normal;
+            font-size: 1em;
+            color: var(--scientific-color);
+        }
+
+        #validationMessage {
+            color: var(--validation-color);
+            margin-top: 15px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        #instructions {
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            color: var(--text-color);
+            text-align: center;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px; /* Space between buttons */
+            margin-bottom: 15px;
+        }
+
+        .button-group button {
+            flex: 1;
+            margin: 0; /* Remove individual button margin */
+        }
+
+        .radio-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap; /* Allow wrapping on small screens */
+        }
+
+        .radio-container label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            color: var(--text-color);
+            font-size: 1em;
+            user-select: none; /* Prevent text selection */
+        }
+
+        .radio-container input[type="radio"] {
+            width: auto;
+            margin-right: 8px;
+            accent-color: var(--button-bg); /* Custom color for radio button */
+        }
+
+        .scientific-notation sup {
+            font-size: 0.8em;
+            vertical-align: super;
+        }
+
+        #copyButton, #shareBtn, #downloadBtn {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* History Section */
+        #historySection {
+            margin-top: 40px;
+            border-top: 1px solid var(--input-border);
+            padding-top: 20px;
+        }
+        #historyList {
+            list-style: none;
+            padding: 0;
+            max-height: 250px;
+            overflow-y: auto;
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+        }
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--input-border);
+            cursor: pointer;
+            background-color: var(--history-item-bg);
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        .history-item:hover {
+            background-color: var(--history-item-hover-bg);
+            transform: translateY(-1px);
+        }
+        .history-item-content {
+            flex-grow: 1;
+            font-size: 0.9em;
+            color: var(--text-color);
+        }
+        .history-item-content strong {
+            color: var(--button-bg);
+        }
+        .history-item-delete {
+            margin-left: 10px;
+            color: var(--validation-color);
+            cursor: pointer;
+            font-size: 1.1em;
+            padding: 5px;
+            border-radius: 4px;
+            transition: color 0.2s, background-color 0.2s;
+        }
+        .history-item-delete:hover {
+            background-color: rgba(255, 0, 0, 0.1);
+        }
+        #clearHistoryBtn {
+            background-color: var(--validation-color);
+            margin-top: 10px;
+        }
+        #clearHistoryBtn:hover {
+            background-color: #c82333;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1001; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: var(--modal-bg); /* Black w/ opacity */
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: var(--modal-content-bg);
+            margin: auto;
+            padding: 30px;
+            border: 1px solid var(--modal-content-border);
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            position: relative;
+            animation-name: animatetop;
+            animation-duration: 0.4s;
+            color: var(--text-color);
+            text-align: left;
+        }
+
+        @keyframes animatetop {
+            from {top: -300px; opacity: 0}
+            to {top: 0; opacity: 1}
+        }
+
+        .close-button {
+            color: var(--close-button-color);
+            font-size: 30px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: var(--close-button-hover-color);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal h2 {
+            margin-top: 0;
+            color: var(--text-color);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .modal p {
+            margin-bottom: 10px;
+        }
+        .modal ul {
+            list-style: disc;
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        /* Audio Player Container (fixed corner) */
+        #fixedAudioPlayerWrapper {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 999; /* Ensure it's above most content */
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end; /* Align player to the right */
+        }
+
+        #playerToggleBtn {
+            background-color: var(--player-toggle-bg);
+            color: var(--player-toggle-text);
+            border: none;
+            border-radius: 50%; /* Make it round */
+            width: 50px;
+            height: 50px;
+            font-size: 1.4em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+            margin-bottom: 10px; /* Space between toggle and player */
+        }
+        #playerToggleBtn:hover {
+            background-color: var(--player-toggle-hover);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        #audioPlayer {
+            width: 280px; /* Compact width */
+            padding: 15px;
+            border: 1px solid var(--player-container-border);
+            border-radius: 10px;
+            background-color: var(--player-container-bg);
+            color: var(--player-text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            transition: background-color 0.3s, border-color 0.3s, color 0.3s, transform 0.3s ease-out, opacity 0.3s ease-out;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transform: translateY(100%); /* Start off-screen */
+            opacity: 0;
+            pointer-events: none; /* Disable interaction when hidden */
+        }
+
+        #audioPlayer.expanded {
+            transform: translateY(0); /* Slide in */
+            opacity: 1;
+            pointer-events: all; /* Enable interaction */
+        }
+
+        #audioPlayer h2 {
+            margin: 0;
+            color: var(--player-accent-color); /* Matches `code(6).html` h1 color */
+            font-size: 1.6em; /* Slightly larger heading for player */
+            text-align: center;
+        }
+
+        /* Track Info Styles */
+        #track-info-container { /* Renamed from #track-info to avoid conflict */
+            margin-bottom: 15px; /* Less margin than code(6).html due to compact player */
+            font-size: 1em;
+            color: var(--player-sub-text-color);
+            min-height: 40px; /* Prevent layout shift */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        #currentTrackName { /* Renamed from #track-name */
+            font-size: 1.2em; /* Adjusted for compact player */
+            color: var(--player-text-color);
+            font-weight: bold;
+            margin-bottom: 3px;
+            text-align: center; /* Center align track name */
+        }
+        #currentTrackNumber { /* Renamed from #track-number */
+            font-size: 0.85em;
+            color: var(--player-sub-text-color);
+            text-align: center; /* Center align track number */
+        }
+
+
+        .audio-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px; /* Adjusted gap for compact player */
+            width: 100%;
+            margin-bottom: 15px; /* Added margin for consistency */
+        }
+
+        .audio-control-button { /* General button style */
+            background-color: var(--player-control-bg);
+            color: white; /* Icons should be white */
+            border: none;
+            border-radius: 50%;
+            width: 45px; /* Adjusted width for compact player */
+            height: 45px; /* Adjusted height for compact player */
+            font-size: 1.2em; /* Adjusted font size */
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+
+        .audio-control-button:hover {
+            background-color: var(--player-control-hover-bg);
+            transform: scale(1.05);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .audio-control-button:active {
+            transform: scale(0.95);
+            background-color: var(--player-control-bg);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Specific styling for main play/pause button */
+        #playPauseBtn { /* Renamed from #play-pause-btn */
+            width: 60px; /* Larger */
+            height: 60px; /* Larger */
+            font-size: 1.8em; /* Larger icon */
+            background-color: var(--player-main-control-bg); /* Accent color */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        #playPauseBtn:hover {
+            background-color: var(--player-main-control-hover-bg);
+            transform: scale(1.08);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+        }
+        #playPauseBtn:active {
+            transform: scale(0.98);
+            background-color: var(--player-main-control-bg);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        #progressBar {
+            width: 100%;
+            height: 5px;
+            background-color: var(--player-slider-track);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 5px;
+            margin-bottom: 10px;
+        }
+        #progressBarFill {
+            height: 100%;
+            width: 0%;
+            background-color: var(--player-slider-thumb);
+            border-radius: 3px;
+            transition: width 0.1s linear;
+        }
+        .audio-time-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            font-size: 0.85em;
+            color: var(--player-sub-text-color);
+            margin-bottom: 10px;
+        }
+
+
+        .audio-slider-group {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 5px;
+            text-align: left; /* Align labels left */
+        }
+        .audio-slider-group label {
+            font-size: 0.9em;
+            color: var(--player-sub-text-color);
+            display: flex;
+            justify-content: space-between;
+        }
+        .audio-slider-group .slider-value {
+            font-weight: bold;
+        }
+        .audio-slider-group input[type="range"] {
+            margin: 0;
+            height: 8px; /* Standard slider height */
+            background: var(--player-slider-track);
+            border-radius: 5px;
+        }
+        .audio-slider-group input[type="range"]::-webkit-slider-thumb {
+            width: 20px;
+            height: 20px;
+            background: var(--player-slider-thumb);
+        }
+        .audio-slider-group input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: var(--player-slider-thumb);
+        }
+        .audio-slider-group small {
+            display: block;
+            font-size: 0.75em;
+            color: var(--player-sub-text-color);
+            margin-top: 3px;
+        }
+
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+            .button-group {
+                flex-direction: column;
+            }
+            .button-group button {
+                width: 100%;
+                margin-bottom: 8px;
+            }
+            .radio-container {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .modal-content {
+                padding: 20px;
+            }
+            .close-button {
+                font-size: 24px;
+                top: 5px;
+                right: 15px;
+            }
+            #historyList {
+                max-height: 200px;
+            }
+            .history-item-content {
+                font-size: 0.85em;
+            }
+            /* Audio Player on small screens */
+            #fixedAudioPlayerWrapper {
+                bottom: 10px;
+                right: 10px;
+            }
+            #audioPlayer {
+                width: calc(100vw - 40px); /* Fill screen width with padding */
+            }
+            .audio-controls {
+                flex-wrap: nowrap; /* Keep controls in one line if possible */
+                justify-content: space-between;
+                gap: 5px; /* Smaller gap */
+            }
+            .audio-control-button, #playPauseBtn {
+                flex-grow: 0; /* No growing */
+                width: 40px; /* Smaller size */
+                height: 40px;
+                font-size: 1.1em;
+            }
+            #playPauseBtn {
+                width: 55px; /* Slightly larger */
+                height: 55px;
+                font-size: 1.6em;
+            }
+            .audio-slider-group {
+                gap: 3px;
+            }
+            .audio-slider-group label {
+                font-size: 0.85em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="icon-container" id="darkModeToggle" aria-label="Toggle Dark Mode">
+        <i class="fas fa-moon"></i>
+    </div>
+    <main>
+        <h1>Number to Name Converter</h1>
+        <div id="instructions">Enter an exponent (0-3003) or use the controls below:</div>
+        
+        <input type="number" id="numberInput" min="0" max="3003" placeholder="e.g., 6 for million, 100 for googol, 303 for centillion, 3003 for millillion">
+        
+        <div class="button-group">
+            <button id="lastNumberBtn">LAST NUMBER</button>
+            <button id="decreaseBtn">-1</button>
+            <button id="increaseBtn">+1</button>
+            <button id="nextNumberBtn">NEXT NUMBER</button>
+        </div>
+        
+        <div class="button-group">
+            <button id="lastMilestoneBtn">LAST MILESTONE</button>
+            <button id="nextMilestoneBtn">NEXT MILESTONE</button>
+        </div>
+
+        <div class="button-group">
+            <button id="randomBtn"><i class="fas fa-random"></i> Random Exponent</button>
+            <button id="aboutBtn"><i class="fas fa-info-circle"></i> About This Tool</button>
+        </div>
+        
+        <label for="centillionSlider">Centillions (0-305):</label>
+        <input type="range" id="centillionSlider" min="0" max="305" value="0">
+        
+        <label for="millillionSlider">Beyond Centillions (0-3003):</label>
+        <input type="range" id="millillionSlider" min="0" max="3003" value="0">
+
+        <div class="radio-container">
+            <label><input type="radio" name="format" value="spaces" checked> With Spaces</label>
+            <label><input type="radio" name="format" value="none"> No Spaces</label>
+            <label><input type="radio" name="format" value="commas"> With Commas</label>
+        </div>
+        
+        <button id="convertBtn">Convert</button>
+
+        <div class="button-group">
+            <button id="copyButton"><i class="fas fa-copy"></i> Copy Results</button>
+            <button id="shareBtn"><i class="fas fa-share-alt"></i> Share</button>
+            <button id="downloadBtn"><i class="fas fa-download"></i> Download</button>
+        </div>
+        
+        <div id="result" aria-live="polite"></div>
+        <div id="visualRepresentation"></div>
+        <div id="scientificNotation" class="scientific-notation"></div>
+        <div id="validationMessage" aria-live="assertive"></div>
+
+        <section id="historySection">
+            <h2>Conversion History</h2>
+            <ul id="historyList">
+                <!-- History items will be inserted here by JavaScript -->
+            </ul>
+            <button id="clearHistoryBtn">Clear History</button>
+        </section>
+    </main>
+
+    <!-- The Modal -->
+    <div id="aboutModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeModalBtn">&times;</span>
+            <h2>About This Number Name Converter</h2>
+            <p>This tool converts large numbers, expressed as an exponent of 10 (e.g., 10^6 for a million), into their corresponding names in the **short scale system**.</p>
+            <h3>Short Scale Explained:</h3>
+            <ul>
+                <li>Each new term (million, billion, trillion, etc.) is one thousand times larger than the previous one.</li>
+                <li>A billion is 1,000 millions (10^9).</li>
+                <li>A trillion is 1,000 billions (10^12).</li>
+                <li>This is the system predominantly used in the United States, Canada, and increasingly in other English-speaking countries.</li>
+            </ul>
+            <h3>The Exponent Range:</h3>
+            <p>This converter supports exponents from 0 (for "one") up to 3003 (for "Millillion").</p>
+            <ul>
+                <li>10^0 = One</li>
+                <li>10^1 = Ten</li>
+                <li>10^2 = Hundred</li>
+                <li>10^3 = Thousand</li>
+                <li>10^6 = Million</li>
+                <li>10^100 = Googol (a special name for 10 to the power of 100)</li>
+                <li>10^303 = Centillion</li>
+                <li>10^603 = Ducentillion</li>
+                <li>10^903 = Trecentillion</li>
+                <li>10^3003 = Millillion</li>
+            </ul>
+            <p>The naming convention for extremely large numbers (beyond nonillion) often follows Latin numerical prefixes combined with the "-illion" suffix. While the names continue almost infinitely, the practical usage and formal recognition diminish significantly for numbers beyond the ones listed.</p>
+            <p>This tool's naming for higher numbers (like Centillion, Ducentillion, up to Millillion series) specifically follows the patterns implied by the provided standard tables for short scale large numbers. Each name is explicitly constructed from documented parts to ensure accuracy.</p>
+            <p>Developed by an AI model to explore large numbers! Enjoy.</p>
+        </div>
+    </div>
+
+    <!-- Fixed Audio Player in corner -->
+    <div id="fixedAudioPlayerWrapper">
+        <button id="playerToggleBtn" aria-label="Toggle Music Player">
+            <i class="fas fa-music"></i>
+        </button>
+        <section id="audioPlayer">
+            <h2>Music Player</h2>
+            
+            <div id="track-info-container">
+                <div id="currentTrackName">No music playing.</div>
+                <div id="currentTrackNumber"></div>
+            </div>
+
+            <div id="progressBar"><div id="progressBarFill"></div></div>
+
+            <div class="audio-time-info">
+                <span id="currentTime">00:00</span>
+                <span id="totalDuration">00:00</span>
+            </div>
+            
+            <audio id="audioElement" preload="auto" loop></audio>
+            
+            <div class="audio-controls">
+                <button id="prevTrackBtn" class="audio-control-button">
+                    <i class="fas fa-backward"></i>
+                </button>
+                <button id="playPauseBtn">
+                    <i class="fas fa-play"></i>
+                </button>
+                <button id="nextTrackBtn" class="audio-control-button">
+                    <i class="fas fa-forward"></i>
+                </button>
+            </div>
+
+            <div class="audio-slider-group">
+                <label for="volumeSlider">Volume: <span id="volumeValue" class="slider-value">100%</span></label>
+                <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1">
+            </div>
+
+            <div class="audio-slider-group">
+                <label for="bpmSlider">Speed (Pitch-Shift): <span id="bpmValue" class="slider-value">1.0x</span></label>
+                <input type="range" id="bpmSlider" min="0.5" max="2.0" step="0.01" value="1.0">
+                <small>Note: This changes playback speed and pitch.</small>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // DOM Elements
+        const numberInput = document.getElementById('numberInput');
+        const centillionSlider = document.getElementById('centillionSlider');
+        const millillionSlider = document.getElementById('millillionSlider');
+        const resultDiv = document.getElementById('result');
+        const visualRepresentationDiv = document.getElementById('visualRepresentation');
+        const scientificNotationDiv = document.getElementById('scientificNotation');
+        const validationMessageDiv = document.getElementById('validationMessage');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const copyButton = document.getElementById('copyButton');
+        const shareButton = document.getElementById('shareBtn');
+        const downloadButton = document.getElementById('downloadBtn');
+        const randomButton = document.getElementById('randomBtn');
+        const aboutButton = document.getElementById('aboutBtn');
+        const aboutModal = document.getElementById('aboutModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const historyList = document.getElementById('historyList');
+        const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+
+        // Audio Player Elements
+        const audioElement = document.getElementById('audioElement');
+        const playerToggleBtn = document.getElementById('playerToggleBtn');
+        const audioPlayerSection = document.getElementById('audioPlayer');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const prevTrackBtn = document.getElementById('prevTrackBtn');
+        const nextTrackBtn = document.getElementById('nextTrackBtn');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeValueEl = document.getElementById('volumeValue');
+        const bpmSlider = document.getElementById('bpmSlider');
+        const bpmValueEl = document.getElementById('bpmValue');
+        const currentTrackNameEl = document.getElementById('currentTrackName');
+        const currentTrackNumberEl = document.getElementById('currentTrackNumber');
+        const currentTimeEl = document.getElementById('currentTime');
+        const totalDurationEl = document.getElementById('totalDuration');
+        const progressBarFill = document.getElementById('progressBarFill');
+
+        // Constants
+        const MIN_EXPONENT = 0;
+        const MAX_EXPONENT = 3003; // Expanded max exponent for Millillion
+        const HISTORY_LIMIT = 10; // Max number of history items
+
+        // Store history in an array
+        let conversionHistory = [];
+
+        // --- Data for Number Naming ---
+        // This is the EXACT list provided by the user for exponents up to 303.
+        const explicitNamesUpToCentillion = {
+            0: "one", 1: "ten", 2: "hundred", 3: "thousand",
+            6: "million", 9: "billion", 12: "trillion", 15: "quadrillion", 18: "quintillion",
+            21: "sextillion", 24: "septillion", 27: "octillion", 30: "nonillion",
+            33: "decillion", 36: "undecillion", 39: "duodecillion", 42: "tredecillion", 45: "quattuordecillion",
+            48: "quindecillion", 51: "sexdecillion", 54: "septendecillion", 57: "octodecillion",
+            60: "novemdecillion", 63: "vigintillion", 66: "unvigintillion", 69: "duovigintillion", 72: "tresvigintillion",
+            75: "quattuordecillion", // User specified this spelling, retaining for 0-303 range
+            78: "quinvigintillion", 81: "sesvigintillion",
+            84: "septemvigintillion", 87: "octovigintillion", 90: "novemvigintillion",
+            93: "trigintillion", 96: "untrigintillion", 99: "duotrigintillion",
+            102: "trestrigintillion", 105: "quattuortrigintillion", 108: "quintrigintillion",
+            111: "sestrigintillion", 114: "septentrigintillion", 117: "octotrigintillion",
+            120: "noventrigintillion", 123: "quadragintillion", 126: "unquadragintillion",
+            129: "duoquadragintillion", 132: "tresquadragintillion", 135: "quattuorquadragintillion",
+            138: "quinquadragintillion", 141: "sesquadragintillion", 144: "septenquadragintillion",
+            147: "octoquadragintillion", 150: "novenquadragintillion",
+            153: "quinquagintillion", 156: "unquinquagintillion", 159: "duoquinquagintillion", 162: "tresquinquagintillion",
+            165: "quattuorquinquagintillion", 168: "quinquinquagintillion", 171: "sesquinquagintillion",
+            174: "septenquinquagintillion", 177: "octoquinquagintillion",
+            180: "novenquinquagintillion", 183: "sexagintillion", 186: "unsexagintillion",
+            189: "duosexagintillion", 192: "tresexagintillion", 195: "quattuorsexagintillion",
+            198: "quinsexagintillion", 201: "sesexagintillion", 204: "septensexagintillion",
+            207: "octosexagintillion", 210: "novensexagintillion",
+            213: "septuagintillion", 216: "unseptuagintillion", 219: "duoseptuagintillion", 222: "treseptuagintillion",
+            225: "quattuorseptuagintillion", 228: "quinseptuagintillion", 231: "seseptuagintillion",
+            234: "septenseptuagintillion", 237: "octoseptuagintillion", 240: "novenseptuagintillion",
+            243: "octogintillion", 246: "unoctogintillion", 249: "duooctogintillion", 252: "tresoctogintillion",
+            255: "quattuoroctogintillion", 258: "quinoctogintillion", 261: "sexoctogintillion", 264: "septemoctogintillion",
+            267: "octooctogintillion", 270: "novemoctogintillion",
+            273: "nonagintillion", 276: "unnonagintillion", 279: "duononagintillion", 282: "trenonagintillion",
+            285: "quattuornonagintillion", 288: "quinnonagintillion", 291: "senonagintillion",
+            294: "septenonagintillion", 297: "octononagintillion", 300: "novenonagintillion",
+            303: "centillion"
+        };
+
+        // This table provides the *prefix part* for N modulo 100,
+        // used when N is 100 or greater, to construct names like "uncentillion" or "quadragintaquingentillion".
+        // The spellings match those used in the `explicitNamesUpToCentillion` for N=1-99 ranges.
+        const N_subPrefixes = {
+            1: "un", 2: "duo", 3: "tres",
+            4: "quattuor", 5: "quin", 6: "sex", 7: "septen", 8: "octo", 9: "noven",
+            10: "deci", 11: "undeci", 12: "duodeci", 13: "tredeci", 14: "quattuordeci",
+            15: "quindeci", 16: "sexdeci", 17: "septendeci", 18: "octodeci", 19: "novemdeci",
+            20: "viginti", 21: "unviginti", 22: "duoviginti", 23: "tresviginti",
+            24: "quattuorviginti", 25: "quinviginti", 26: "sesviginti",
+            27: "septemviginti", 28: "octoviginti", 29: "novemviginti",
+            30: "triginta", 31: "untriginta", 32: "duotriginta", 33: "trestriginta",
+            34: "quattuortriginta", 35: "quintriginta", 36: "sestriginta",
+            37: "septentriginta", 38: "octotriginta", 39: "noventriginta",
+            40: "quadraginta", 41: "unquadraginta", 42: "duoquadraginta", 43: "tresquadraginta",
+            44: "quattuorquadraginta", 45: "quinquadraginta", 46: "sesquadraginta",
+            47: "septenquadraginta", 48: "octoquadraginta", 49: "novenquadraginta",
+            50: "quinquaginta", 51: "unquinquaginta", 52: "duoquinquaginta", 53: "tresquinquaginta",
+            54: "quattuorquinquaginta", 55: "quinquinquaginta", 56: "sesquinquaginta",
+            57: "septenquinquaginta", 58: "octoquinquaginta", 59: "novenquinquaginta",
+            60: "sexaginta", 61: "unsexaginta", 62: "duosexaginta", 63: "tresexaginta",
+            64: "quattuorsexaginta", 65: "quinsexaginta", 66: "sesexaginta",
+            67: "septensexaginta", 68: "octosexaginta", 69: "novensexaginta",
+            70: "septuaginta", 71: "unseptuaginta", 72: "duoseptuaginta", 73: "treseptuaginta",
+            74: "quattuorseptuaginta", 75: "quinseptuaginta", 76: "seseptuaginta",
+            77: "septenseptuaginta", 78: "octoseptuaginta", 79: "novemseptuaginta",
+            80: "octoginta", 81: "unoctoginta", 82: "duooctoginta", 83: "tresoctoginta",
+            84: "quattuoroctoginta", 85: "quinoctoginta", 86: "sexoctoginta", 87: "septemoctoginta",
+            88: "octooctoginta", 89: "novemoctoginta",
+            90: "nonaginta", 91: "unnonaginta", 92: "duononaginta", 93: "trenonaginta",
+            94: "quattuornonaginta", 95: "quinnonaginta", 96: "senonaginta",
+            97: "septenonaginta", 98: "octononaginta", 99: "novenonaginta"
+        };
+
+        // Base names for the hundreds part of the N-value (e.g., for N=100 -> centillion, N=200 -> ducentillion)
+        const illionHundredBaseNames = {
+            100: "centillion",
+            200: "ducentillion",
+            300: "trecentillion",
+            400: "quadringentillion",
+            500: "quingentillion",
+            600: "sescentillion",
+            700: "septingentillion",
+            800: "octingentillion",
+            900: "nongentillion",
+            1000: "millillion"
+        };
+
+        /**
+         * Generates names for exponents from 306 up to 3003 based on patterns from provided images.
+         * This function handles the N=101 to N=1000 range.
+         * @returns {object} A map of exponent -> name for higher ranges.
+         */
+        function generateNamesBeyondCentillion() {
+            const names = {};
+
+            // Start from N=101 (which is 10^306, "uncentillion") up to N=1000 (10^3003, "millillion")
+            for (let n = 101; n <= 1000; n++) {
+                const exponent = 3 * n + 3;
+
+                const hundredsBaseN = Math.floor(n / 100) * 100; // e.g., for N=101, 100; for N=296, 200
+                const remainderN = n % 100; // e.g., for N=101, 1; for N=296, 96
+
+                // If remainderN is 0, this means it's an exact hundred (like N=200, 300...).
+                // These should directly map to `illionHundredBaseNames`.
+                if (remainderN === 0) {
+                    names[exponent] = illionHundredBaseNames[n];
+                    continue; // Skip to next N
+                }
+
+                const remainderPrefix = N_subPrefixes[remainderN];
+                const baseHundredName = illionHundredBaseNames[hundredsBaseN]; // e.g., "centillion", "quingentillion"
+                const baseHundredStripped = baseHundredName.replace(/illion$/, ''); // e.g., "cent", "quingent"
+
+                // Rule based on image patterns and fixing "aa":
+                // If remainderN is 1-19 (simple unit/teen prefix like 'un', 'deci'): directly combine with baseHundredName.
+                //    e.g., "un" + "centillion" -> "uncentillion"
+                // If remainderN is 20-99 (compound tens prefix like 'viginti', 'quadraginta'):
+                //    Combine remainderPrefix with strippedHundredBase, then append "illion".
+                //    The prefixes like 'quadraginta' already contain their 'a', so no additional 'a' is inserted.
+                //    e.g., "quadraginta" + "quingent" + "illion" -> "quadragintaquingentillion"
+                
+                const isSimplePrefixRange = (remainderN >= 1 && remainderN <= 19);
+
+                if (isSimplePrefixRange) {
+                    names[exponent] = remainderPrefix + baseHundredName;
+                } else {
+                    names[exponent] = remainderPrefix + baseHundredStripped + "illion";
+                }
+            }
+            return names;
+        }
+
+        // Dynamically generate the full illion name list for N=101 to N=1000
+        const generatedHigherIllionNames = generateNamesBeyondCentillion();
+
+        // The master `numberNames` object for direct lookup
+        // It prioritizes the explicitly provided names up to 303, then adds the higher generated ones.
+        const numberNames = {
+            ...explicitNamesUpToCentillion, // Exact names up to 303
+            100: "googol", // Special case, overrides if 100 happened to be in explicit list, which it isn't
+            ...generatedHigherIllionNames // Names from 306 to 3003
+        };
+
+        /**
+         * Converts an exponent to its corresponding number name (short scale).
+         * @param {number} exponent - The exponent (e.g., 6 for million, 100 for googol).
+         * @returns {string} The name of the number.
+         */
+        function getNumberName(exponent) {
+            if (exponent < MIN_EXPONENT || exponent > MAX_EXPONENT) {
+                return "Invalid Exponent";
+            }
+
+            // Direct lookup for all defined exponents (including all 3N+3 series, and special cases)
+            if (numberNames[exponent]) {
+                return numberNames[exponent];
+            }
+
+            // Handle intermediate numbers (10^4, 10^5, 10^7, 10^775 etc.)
+            // These are `10^(baseExp + 1)` or `10^(baseExp + 2)`
+            if (exponent % 3 !== 0) {
+                const baseExponent = Math.floor(exponent / 3) * 3; // Get the closest 3N multiple (e.g., for 10^7, baseExp=10^6)
+                const remainder = exponent % 3; // 1 for 'ten', 2 for 'hundred'
+
+                let prefix = "";
+                if (remainder === 1) prefix = "ten";
+                else if (remainder === 2) prefix = "hundred";
+
+                // Recursively get the name for the base 10^(3N) number. This will now hit the accurate `numberNames` lookup.
+                const baseName = getNumberName(baseExponent);
+
+                // Special handling for the range around googol (10^100)
+                if (baseExponent === 100) { // For 10^101 and 10^102
+                    if (exponent === 101) return "ten googol";
+                    if (exponent === 102) return "hundred googol";
+                }
+                
+                // For 10^4 (ten thousand) and 10^5 (hundred thousand)
+                if (baseName === "thousand" && prefix) {
+                    return `${prefix} thousand`;
+                }
+
+                // General case for prefixes on larger numbers like "ten million", "hundred billion", etc.
+                return `${prefix} ${baseName}`;
+            }
+
+            // Fallback for any unexpected exponent (shouldn't be hit with correctly defined ranges and generation)
+            return `Name not defined for 10^${exponent}`;
+        }
+
+        /**
+         * Formats a large number string (e.g., "1000000") based on selected format.
+         * @param {string} numberString - The numeric representation as a string.
+         * @returns {string} The formatted number string.
+         */
+        function formatNumber(numberString) {
+            const format = document.querySelector('input[name="format"]:checked').value;
+            if (format === 'commas') {
+                return numberString.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            } else if (format === 'none') {
+                return numberString;
+            } else { // 'spaces'
+                return numberString.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+            }
+        }
+
+        /**
+         * Handles the conversion process: validates input, generates names, and updates display.
+         * Also updates history and sliders.
+         */
+        function handleConversion() {
+            const exponent = parseInt(numberInput.value, 10);
+
+            // Clear previous results and validation message
+            resultDiv.innerText = "";
+            visualRepresentationDiv.innerText = "";
+            scientificNotationDiv.innerHTML = "";
+            validationMessageDiv.innerText = "";
+            document.title = "Number to Name Converter"; // Reset title temporarily
+
+            if (isNaN(exponent) || exponent < MIN_EXPONENT || exponent > MAX_EXPONENT) {
+                validationMessageDiv.innerText = `Please enter a valid natural number between ${MIN_EXPONENT} and ${MAX_EXPONENT}.`;
+                // Update sliders to reflect the invalid state or clamp to min/max visual range
+                centillionSlider.value = Math.min(exponent, parseInt(centillionSlider.max, 10)); // Centillion slider only goes to 305
+                millillionSlider.value = Math.max(MIN_EXPONENT, Math.min(exponent, MAX_EXPONENT)); // Clamp full range slider
+                return;
+            }
+
+            const name = getNumberName(exponent);
+            const numericRepresentation = '1' + '0'.repeat(exponent);
+            const formattedNumber = formatNumber(numericRepresentation);
+
+            resultDiv.innerText = name;
+            visualRepresentationDiv.innerText = formattedNumber;
+            scientificNotationDiv.innerHTML = `10<sup>${exponent}</sup>`;
+            document.title = `${name} (10^${exponent})`; // Update page title
+
+            updateSliders(); // Keep sliders in sync
+            addOrUpdateHistory({ exponent, name, formattedNumber }); // Add to history
+        }
+
+        /**
+         * Adjusts the number input by a given delta (+1 or -1) and triggers conversion.
+         * @param {number} delta - The amount to adjust the exponent by.
+         */
+        function adjustNumber(delta) {
+            let currentValue = parseInt(numberInput.value, 10) || MIN_EXPONENT;
+            let newValue = currentValue + delta;
+            
+            newValue = Math.max(MIN_EXPONENT, Math.min(newValue, MAX_EXPONENT));
+            
+            numberInput.value = newValue;
+            handleConversion();
+        }
+
+        // Dynamically generate keyExponents from the keys of the `numberNames` object
+        // This ensures LAST/NEXT NUMBER buttons hit all *defined* names.
+        const keyExponents = Object.keys(numberNames).map(Number).sort((a, b) => a - b);
+
+        // Milestones as requested
+        const milestones = [0, 1, 2, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 63, 93, 123, 153, 183, 213, 243, 273, 303, // Existing up to Centillion
+            603, 903, 1203, 1503, 1803, 2103, 2403, 2703, 3003 // New -illions up to Millillion
+        ];
+
+        /**
+         * Jumps the number input to the next/previous key exponent.
+         * @param {'next'|'last'} direction - Direction to jump.
+         */
+        function jumpToKeyExponent(direction) {
+            const currentValue = parseInt(numberInput.value, 10) || MIN_EXPONENT;
+            let newValue;
+
+            if (direction === 'next') {
+                newValue = keyExponents.find(exp => exp > currentValue);
+                if (newValue === undefined) newValue = keyExponents[keyExponents.length - 1]; // Clamp to max if no next
+            } else { // 'last'
+                newValue = keyExponents.slice().reverse().find(exp => exp < currentValue);
+                if (newValue === undefined) newValue = keyExponents[0]; // Clamp to min if no previous
+            }
+
+            numberInput.value = newValue;
+            handleConversion();
+        }
+
+        /**
+         * Jumps the number input to the next/previous milestone exponent.
+         * @param {'next'|'last'} direction - Direction to jump.
+         */
+        function jumpToMilestone(direction) {
+            const currentValue = parseInt(numberInput.value, 10) || MIN_EXPONENT;
+            let newValue;
+
+            if (direction === 'next') {
+                newValue = milestones.find(exp => exp > currentValue);
+                if (newValue === undefined) newValue = milestones[milestones.length - 1]; // Clamp to max if no next
+            } else { // 'last'
+                newValue = milestones.slice().reverse().find(exp => exp < currentValue);
+                if (newValue === undefined) newValue = milestones[0]; // Clamp to min if no previous
+            }
+
+            numberInput.value = newValue;
+            handleConversion();
+        }
+
+        /**
+         * Generates a random exponent within the allowed range and performs conversion.
+         */
+        function generateRandomExponent() {
+            const randomExp = Math.floor(Math.random() * (MAX_EXPONENT - MIN_EXPONENT + 1)) + MIN_EXPONENT;
+            numberInput.value = randomExp;
+            handleConversion();
+        }
+
+        /**
+         * Keeps the sliders value synchronized with the number input.
+         */
+        function updateSliders() {
+            const currentExp = parseInt(numberInput.value, 10);
+            centillionSlider.value = Math.min(currentExp, parseInt(centillionSlider.max, 10)); // Centillion slider only goes to 305
+            millillionSlider.value = currentExp; // Millillion slider covers full range
+        }
+
+        /**
+         * Handles changes from a slider, updating the number input and triggering conversion.
+         * @param {Event} event - The input event from the slider.
+         */
+        function handleSliderChange(event) {
+            numberInput.value = event.target.value;
+            handleConversion();
+        }
+
+        /**
+         * Copies the results to the clipboard.
+         */
+        async function copyResults() {
+            const name = resultDiv.innerText;
+            const numeric = visualRepresentationDiv.innerText;
+            const scientific = scientificNotationDiv.innerText;
+
+            if (!name || name === "Invalid Exponent" || name.includes("Name not defined")) {
+                alert("Nothing valid to copy!");
+                return;
+            }
+
+            const textToCopy = `Number Name: ${name}\nNumeric Representation: ${numeric}\nScientific Notation: ${scientific}`;
+            try {
+                await navigator.clipboard.writeText(textToCopy);
+                alert("Results copied to clipboard!");
+            } catch (err) {
+                console.error('Failed to copy: ', err);
+                alert('Failed to copy results. Please try manually selecting and copying.');
+            }
+        }
+
+        /**
+         * Shares the current conversion results using the Web Share API or falls back to copy.
+         */
+        async function shareResults() {
+            const name = resultDiv.innerText;
+            const numeric = visualRepresentationDiv.innerText;
+            const scientific = scientificNotationDiv.innerText;
+
+            if (!name || name === "Invalid Exponent" || name.includes("Name not defined")) {
+                alert("Nothing valid to share!");
+                return;
+            }
+
+            const shareData = {
+                title: `Number Name: ${name}`,
+                text: `Check out ${name} (which is ${scientific} or ${numeric})!`,
+                url: window.location.href // Current page URL
+            };
+
+            if (navigator.share) {
+                try {
+                    await navigator.share(shareData);
+                    console.log('Results shared successfully');
+                } catch (err) {
+                    if (err.name === 'AbortError') {
+                        console.log('Share was aborted by the user');
+                    } else {
+                        console.error('Error sharing:', err);
+                        alert('Could not share results. Copying to clipboard instead.');
+                        copyResults(); // Fallback to copy
+                    }
+                }
+            } else {
+                alert('Web Share API is not supported in this browser. Copying to clipboard instead.');
+                copyResults(); // Fallback to copy
+            }
+        }
+
+        /**
+         * Downloads the current conversion results as a text file.
+         */
+        function downloadResults() {
+            const name = resultDiv.innerText;
+            const numeric = visualRepresentationDiv.innerText;
+            const scientific = scientificNotationDiv.innerText;
+            const exponent = numberInput.value;
+
+            if (!name || name === "Invalid Exponent" || name.includes("Name not defined")) {
+                alert("Nothing valid to download!");
+                return;
+            }
+
+            const fileContent = `Number Name Converter Result:\n\n` +
+                                `Exponent: ${exponent}\n` +
+                                `Name: ${name}\n` +
+                                `Numeric Representation: ${numeric}\n` +
+                                `Scientific Notation: ${scientific}\n\n` +
+                                `Generated by numbers_to_centillion.html`;
+
+            const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `number_10_to_the_${exponent}_${name.replace(/\s/g, '_').toLowerCase()}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url); // Clean up the object URL
+        }
+
+        /**
+         * Adds or updates a conversion entry in the history.
+         * Prevents duplicates by moving existing entries to the top.
+         * @param {object} entry - The conversion object {exponent, name, formattedNumber}.
+         */
+        function addOrUpdateHistory(entry) {
+            // Don't add invalid conversions to history
+            if (entry.name === "Invalid Exponent" || entry.name.includes("Name not defined")) return;
+
+            // Remove if already in history to move it to top
+            conversionHistory = conversionHistory.filter(item => item.exponent !== entry.exponent);
+            
+            // Add to the beginning
+            conversionHistory.unshift(entry);
+
+            // Trim history to limit
+            if (conversionHistory.length > HISTORY_LIMIT) {
+                conversionHistory = conversionHistory.slice(0, HISTORY_LIMIT);
+            }
+
+            displayHistory();
+        }
+
+        /**
+         * Renders the conversion history list.
+         */
+        function displayHistory() {
+            historyList.innerHTML = ''; // Clear current list
+
+            if (conversionHistory.length === 0) {
+                historyList.innerHTML = '<li class="history-item"><div class="history-item-content">No recent conversions.</div></li>';
+                clearHistoryBtn.style.display = 'none';
+                return;
+            } else {
+                clearHistoryBtn.style.display = 'block';
+            }
+
+            conversionHistory.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.classList.add('history-item');
+                li.setAttribute('tabindex', '0'); // Make it focusable
+
+                const contentDiv = document.createElement('div');
+                contentDiv.classList.add('history-item-content');
+                contentDiv.innerHTML = `<strong>10^${item.exponent}</strong>: ${item.name}`;
+                
+                const deleteSpan = document.createElement('span');
+                deleteSpan.classList.add('history-item-delete');
+                deleteSpan.innerHTML = '<i class="fas fa-times-circle"></i>';
+                deleteSpan.title = 'Remove from history';
+                deleteSpan.addEventListener('click', (event) => {
+                    event.stopPropagation(); // Prevent activating the li click
+                    removeHistoryItem(index);
+                });
+
+                li.appendChild(contentDiv);
+                li.appendChild(deleteSpan);
+
+                li.addEventListener('click', () => {
+                    numberInput.value = item.exponent;
+                    handleConversion();
+                });
+                li.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        numberInput.value = item.exponent;
+                        handleConversion();
+                    }
+                });
+
+                historyList.appendChild(li);
+            });
+        }
+
+        /**
+         * Removes a specific item from history by its index.
+         * @param {number} index - The index of the item to remove.
+         */
+        function removeHistoryItem(index) {
+            conversionHistory.splice(index, 1);
+            displayHistory();
+        }
+
+        /**
+         * Clears all items from the conversion history.
+         */
+        function clearHistory() {
+            if (confirm('Are you sure you want to clear all history?')) {
+                conversionHistory = [];
+                displayHistory();
+            }
+        }
+
+        /**
+         * Opens the "About" modal.
+         */
+        function openModal() {
+            aboutModal.style.display = 'flex'; // Use flex to center content
+        }
+
+        /**
+         * Closes the "About" modal.
+         */
+        function closeModal() {
+            aboutModal.style.display = 'none';
+        }
+
+        // --- Audio Player Logic (No Web Audio API) ---
+        let isPlayerExpanded = false;
+        let isPlaying = false;
+
+        // --- PLAYLIST ---
+        // IMPORTANT: These URLs are for demonstration. If you want to use local files,
+        // create a 'music' folder next to this HTML file and update the paths.
+        // For example: { name: "My Local Song", url: "music/my_song.mp3" }
+        const playlist = [
+            { name: "SoundHelix Song 1", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
+            { name: "SoundHelix Song 2", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
+            { name: "SoundHelix Song 3", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" },
+            { name: "SoundHelix Song 4", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3" },
+            { name: "SoundHelix Song 5", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3" },
+            { name: "SoundHelix Song 6", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3" },
+            { name: "SoundHelix Song 7", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3" },
+            { name: "SoundHelix Song 8", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3" },
+            { name: "SoundHelix Song 9", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3" },
+            { name: "SoundHelix Song 10", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3" },
+            { name: "Chillwave Dream", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3" },
+            { name: "Synthwave Nights", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3" },
+            { name: "Electronic Pulse", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-13.mp3" },
+            { name: "Techno Groove", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-14.mp3" },
+            { name: "Abstract Beats", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3" },
+            { name: "Digital Landscapes", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-16.mp3" },
+            { name: "Cosmic Journey", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-17.mp3" },
+            { name: "Rhythmic Flow", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-18.mp3" },
+            { name: "Deep House Mix", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-19.mp3" },
+            { name: "Ambient Echoes", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-20.mp3" },
+            { name: "Future Funk", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-21.mp3" },
+            { name: "Glitch Hop", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-22.mp3" },
+            { name: "Trap Banger", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-23.mp3" },
+            { name: "Lo-Fi Study", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-24.mp3" },
+            { name: "Epic Orchestral", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-25.mp3" },
+            { name: "Smooth Jazz", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-26.mp3" },
+            { name: "Classical Fusion", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-27.mp3" },
+            { name: "World Music", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-28.mp3" },
+            { name: "Folk Ballad", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-29.mp3" },
+            { name: "Rock Anthem", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-30.mp3" }
+        ];
+        let currentTrackIndex = 0;
+
+        function formatTime(seconds) {
+            if (isNaN(seconds) || seconds < 0) return '00:00';
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = Math.floor(seconds % 60);
+            return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+        }
+
+        function loadTrack(index) {
+            if (index < 0) {
+                index = playlist.length - 1; // Wrap around to end
+            } else if (index >= playlist.length) {
+                index = 0; // Wrap around to beginning
+            }
+            currentTrackIndex = index;
+
+            const track = playlist[currentTrackIndex];
+            audioElement.src = track.url;
+            currentTrackNameEl.textContent = track.name;
+            currentTrackNumberEl.textContent = `Track ${currentTrackIndex + 1}/${playlist.length}`;
+            currentTimeEl.textContent = '00:00';
+            totalDurationEl.textContent = '00:00';
+            progressBarFill.style.width = '0%';
+
+            if (isPlaying) {
+                audioElement.play().catch(e => {
+                    console.error("Autoplay failed for new track:", e);
+                    isPlaying = false; // Reset state if playback fails
+                    playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+                    currentTrackNameEl.textContent = `Error playing: ${track.name}`;
+                });
+            } else {
+                audioElement.load(); // Just load without playing
+            }
+        }
+
+        function togglePlayPause() {
+            if (isPlaying) {
+                audioElement.pause();
+                playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+                isPlaying = false;
+            } else {
+                audioElement.play().then(() => {
+                    playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                    isPlaying = true;
+                }).catch(e => {
+                    console.error("Error attempting to play audio:", e);
+                    if (e.name === "NotAllowedError" || e.name === "AbortError") {
+                        currentTrackNameEl.textContent = "Playback blocked. Click Play to start!";
+                    } else {
+                        currentTrackNameEl.textContent = "Error playing music.";
+                    }
+                    playPauseBtn.innerHTML = '<i class="fas fa-play"></i>'; // Reset button
+                    isPlaying = false;
+                });
+            }
+        }
+
+        function playNextTrack() {
+            isPlaying = true; // Assume user wants to play next
+            loadTrack(currentTrackIndex + 1);
+        }
+
+        function playPreviousTrack() {
+            isPlaying = true; // Assume user wants to play previous
+            loadTrack(currentTrackIndex - 1);
+        }
+
+        function updateVolume() {
+            audioElement.volume = parseFloat(volumeSlider.value);
+            volumeValueEl.textContent = `${Math.round(audioElement.volume * 100)}%`;
+            // Update playerToggleBtn icon based on volume (optional, but nice UX)
+            const icon = playerToggleBtn.querySelector('i');
+            icon.classList.remove('fa-volume-up', 'fa-volume-down', 'fa-volume-mute', 'fa-music');
+            if (isPlaying) {
+                if (audioElement.volume > 0.5) icon.classList.add('fa-volume-up');
+                else if (audioElement.volume > 0) icon.classList.add('fa-volume-down');
+                else icon.classList.add('fa-volume-mute');
+            } else {
+                icon.classList.add('fa-music'); // Show music note when paused
+            }
+        }
+
+        function updateBPM() {
+            audioElement.playbackRate = parseFloat(bpmSlider.value);
+            bpmValueEl.textContent = `${audioElement.playbackRate.toFixed(2)}x`;
+        }
+
+        function updateProgressBar() {
+            const currentTime = audioElement.currentTime;
+            const duration = audioElement.duration;
+
+            if (isNaN(duration) || duration === 0) {
+                progressBarFill.style.width = '0%';
+                currentTimeEl.textContent = '00:00';
+                totalDurationEl.textContent = '00:00';
+                return;
+            }
+
+            const progress = (currentTime / duration) * 100;
+            progressBarFill.style.width = `${progress}%`;
+            currentTimeEl.textContent = formatTime(currentTime);
+            totalDurationEl.textContent = formatTime(duration);
+        }
+
+        function togglePlayerVisibility() {
+            isPlayerExpanded = !isPlayerExpanded;
+            if (isPlayerExpanded) {
+                audioPlayerSection.classList.add('expanded');
+                playerToggleBtn.innerHTML = '<i class="fas fa-times"></i>'; // 'X' icon
+            } else {
+                audioPlayerSection.classList.remove('expanded');
+                // Restore music icon if not playing, otherwise keep volume icon
+                if (!isPlaying) {
+                    playerToggleBtn.innerHTML = '<i class="fas fa-music"></i>';
+                }
+            }
+        }
+
+
+        // --- Event Listeners ---
+        document.addEventListener('DOMContentLoaded', () => {
+            numberInput.value = MIN_EXPONENT; // Set initial value
+            handleConversion(); // Perform initial conversion on load
+            displayHistory(); // Display empty history or loaded history
+
+            // Audio Player initialization
+            loadTrack(0); // Load the first track
+            updateVolume(); // Apply initial volume slider value
+            updateBPM();    // Apply initial BPM slider value
+        });
+
+        numberInput.addEventListener('input', handleConversion);
+        numberInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Prevent form submission
+                handleConversion();
+            }
+        });
+
+        centillionSlider.addEventListener('input', handleSliderChange);
+        millillionSlider.addEventListener('input', handleSliderChange);
+
+        document.getElementById('decreaseBtn').addEventListener('click', () => adjustNumber(-1));
+        document.getElementById('increaseBtn').addEventListener('click', () => adjustNumber(1));
+        document.getElementById('lastNumberBtn').addEventListener('click', () => jumpToKeyExponent('last'));
+        document.getElementById('nextNumberBtn').addEventListener('click', () => jumpToKeyExponent('next'));
+        document.getElementById('lastMilestoneBtn').addEventListener('click', () => jumpToMilestone('last'));
+        document.getElementById('nextMilestoneBtn').addEventListener('click', () => jumpToMilestone('next'));
+        document.getElementById('convertBtn').addEventListener('click', handleConversion);
+        
+        copyButton.addEventListener('click', copyResults);
+        shareButton.addEventListener('click', shareResults);
+        downloadButton.addEventListener('click', downloadResults);
+        randomButton.addEventListener('click', generateRandomExponent);
+        aboutButton.addEventListener('click', openModal);
+        closeModalBtn.addEventListener('click', closeModal);
+        clearHistoryBtn.addEventListener('click', clearHistory);
+
+        // Close modal if user clicks outside of it
+        window.addEventListener('click', (event) => {
+            if (event.target === aboutModal) {
+                closeModal();
+            }
+        });
+        // Close modal with Escape key
+        window.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && aboutModal.style.display === 'flex') {
+                closeModal();
+            }
+        });
+
+        document.querySelectorAll('input[name="format"]').forEach(radio => {
+            radio.addEventListener('change', handleConversion);
+        });
+
+        darkModeToggle.addEventListener('click', function() {
+            document.body.classList.toggle('dark-mode');
+            const icon = darkModeToggle.querySelector('i');
+            if (document.body.classList.contains('dark-mode')) {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            }
+        });
+
+        // Audio Player Event Listeners (Simplified for no Web Audio API)
+        playerToggleBtn.addEventListener('click', togglePlayerVisibility);
+        playPauseBtn.addEventListener('click', togglePlayPause);
+        prevTrackBtn.addEventListener('click', playPreviousTrack);
+        nextTrackBtn.addEventListener('click', playNextTrack);
+        volumeSlider.addEventListener('input', updateVolume);
+        bpmSlider.addEventListener('input', updateBPM);
+        
+        audioElement.addEventListener('ended', playNextTrack); // Auto play next song
+        audioElement.addEventListener('timeupdate', updateProgressBar); // Update progress bar and time display
+        audioElement.addEventListener('playing', () => { // When audio actually starts playing
+            isPlaying = true;
+            playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+            updateVolume(); // Update top button icon to volume
+        });
+        audioElement.addEventListener('pause', () => { // When audio is paused
+            isPlaying = false;
+            playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+            playerToggleBtn.querySelector('i').classList.remove('fa-volume-up', 'fa-volume-down', 'fa-volume-mute');
+            playerToggleBtn.querySelector('i').classList.add('fa-music');
+        });
+        audioElement.addEventListener('durationchange', updateProgressBar); // Update duration when track loads
+        audioElement.addEventListener('error', (e) => {
+            console.error("Audio error:", e);
+            currentTrackNameEl.textContent = `Error loading track: ${playlist[currentTrackIndex].name}. Trying next.`;
+            isPlaying = false;
+            playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+            // Optionally auto-play next track on error
+            // setTimeout(playNextTrack, 2000); 
+        });
+
+    </script>
+</body>
+</html>
